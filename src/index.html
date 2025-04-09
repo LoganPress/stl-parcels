@@ -58,7 +58,18 @@
           gap: 20px;
         "
       >
-        <div id="map" style="height: 850px; width: 1200px"></div>
+        <div id="map" style="height: 850px; width: 1200px; position: relative">
+          <a
+            href="https://www.maptiler.com/"
+            target="_blank"
+            style="position: absolute; bottom: 0; left: 0; z-index: 1000"
+            ><img
+              width="200px"
+              height="52px"
+              src="/assets/maptiler-logo-dark.png"
+              alt="MapTiler logo"
+          /></a>
+        </div>
         <div id="legend-container"></div>
       </div>
       <p>
@@ -81,15 +92,7 @@
           gap: 1;
           margin-top: 20px;
         "
-      >
-        <p>Made with:</p>
-        <a href="https://www.maptiler.com/" target="_blank"
-          ><img
-            width="200px"
-            height="52px"
-            src="/assets/maptiler-logo-dark.png"
-        /></a>
-      </div>
+      ></div>
     </div>
 
     <script
