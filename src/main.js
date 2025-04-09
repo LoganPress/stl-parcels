@@ -70,6 +70,206 @@ const legend = d3
 
 legendSvg.append("g").call(legend);
 
+let parcelLayer;
+let selectedMetric = "logTvd";
+
+let minIvd = 0;
+let maxIvd = 0;
+let minLogIvd = 0;
+let maxLogIvd = 0;
+let minLvd = 0;
+let maxLvd = 0;
+let minLogLvd = 0;
+let maxLogLvd = 0;
+let minTvd = 0;
+let maxTvd = 0;
+let minLogTvd = 0;
+let maxLogTvd = 0;
+let minLir = 0;
+let maxLir = 0;
+let minLogLir = 0;
+let maxLogLir = 0;
+
+function updateMap(parcels) {
+  if (parcelLayer) {
+    map.removeLayer(parcelLayer);
+  }
+
+  const parcelValues = Object.values(parcels);
+
+  parcelLayer = L.geoJSON(
+    parcelValues.map((p) => p.shape),
+    {
+      weight: 2,
+      style: (feature) => {
+        const parcel = parcels[feature.properties.HANDLE];
+
+        // LOG LAND IMPROVEMENT RATIO
+        if (selectedMetric === "logLir") {
+          const colorIndex = Math.floor(
+            (((parcel.logLir ?? minLogLir) - minLogLir) /
+              (maxLogLir - minLogLir)) *
+              colorScale.length
+          );
+          if (parcel.assessmentLand > 0 && parcel.assessmentImprovement > 0) {
+            return {
+              fillColor: colorScale[colorIndex],
+              fillOpacity: 0.5,
+              color: colorScale[colorIndex],
+              opacity: 1,
+            };
+          }
+          return { opacity: 0, fillOpacity: 0 };
+        }
+
+        // LAND IMPROVEMENT RATIO
+        if (selectedMetric === "lir") {
+          const colorIndex = Math.floor(
+            ((parcel.lir - minLir) / (maxLir - minLir)) * colorScale.length
+          );
+          if (parcel.assessmentLand > 0 && parcel.assessmentImprovement > 0) {
+            return {
+              fillColor: colorScale[colorIndex],
+              fillOpacity: 0.5,
+              color: colorScale[colorIndex],
+              opacity: 1,
+            };
+          }
+          return { opacity: 0, fillOpacity: 0 };
+        }
+
+        // LOG IMPROVEMENT VALUE DENSITY
+        // const colorIndex = Math.floor(
+        //   (((parcel.logIvd ?? minLogIvd) - minLogIvd) /
+        //     (maxLogIvd - minLogIvd)) *
+        //     colorScale.length
+        // );
+        // if (parcel.assessmentImprovement > 0) {
+        //   return {
+        //     fillColor: colorScale[colorIndex],
+        //     fillOpacity: 0.5,
+        //     color: colorScale[colorIndex],
+        //     opacity: 1,
+        //   };
+        // }
+        // return { opacity: 0, fillOpacity: 0 };
+
+        // IMPROVEMENT VALUE DENSITY
+        // const colorIndex = Math.floor(
+        //   ((parcel.ivd - minIvd) / (maxIvd - minIvd)) * colorScale.length
+        // );
+        // if (parcel.assessmentImprovement > 0) {
+        //   return {
+        //     fillColor: colorScale[colorIndex],
+        //     fillOpacity: 0.5,
+        //     color: colorScale[colorIndex],
+        //     opacity: 1,
+        //   };
+        // }
+        // return { opacity: 0, fillOpacity: 0 };
+
+        // LOG LAND VALUE DENSITY
+        // const colorIndex = Math.floor(
+        //   (((parcel.logLvd ?? minLogLvd) - minLogLvd) /
+        //     (maxLogLvd - minLogLvd)) *
+        //     colorScale.length
+        // );
+        // if (parcel.assessmentLand > 0) {
+        //   return {
+        //     fillColor: colorScale[colorIndex],
+        //     fillOpacity: 0.5,
+        //     color: colorScale[colorIndex],
+        //     opacity: 1,
+        //   };
+        // }
+        // return { opacity: 0, fillOpacity: 0 };
+
+        // LAND VALUE DENSITY
+        // const colorIndex = Math.floor(
+        //   ((parcel.lvd - minLvd) / (maxLvd - minLvd)) * colorScale.length
+        // );
+        // if (parcel.assessmentLand > 0) {
+        //   return {
+        //     fillColor: colorScale[colorIndex],
+        //     fillOpacity: 0.5,
+        //     color: colorScale[colorIndex],
+        //     opacity: 1,
+        //   };
+        // }
+        // return { opacity: 0, fillOpacity: 0 };
+
+        // LOG TOTAL VALUE DENSITY
+        if (selectedMetric === "logTvd") {
+          const colorIndex = Math.floor(
+            (((parcel.logTvd ?? minLogTvd) - minLogTvd) /
+              (maxLogTvd - minLogTvd)) *
+              colorScale.length
+          );
+          if (parcel.assessmentTotal > 0) {
+            return {
+              fillColor: colorScale[colorIndex],
+              fillOpacity: 0.5,
+              color: colorScale[colorIndex],
+              opacity: 1,
+            };
+          }
+          return { opacity: 0, fillOpacity: 0 };
+        }
+
+        // TOTAL VALUE DENSITY
+        if (selectedMetric === "tvd") {
+          const colorIndex = Math.floor(
+            ((parcel.tvd - minTvd) / (maxTvd - minTvd)) * colorScale.length
+          );
+          if (parcel.assessmentTotal > 0) {
+            return {
+              fillColor: colorScale[colorIndex],
+              fillOpacity: 0.5,
+              color: colorScale[colorIndex],
+              opacity: 1,
+            };
+          }
+          return { opacity: 0, fillOpacity: 0 };
+        }
+      },
+      onEachFeature: (feature, layer) => {
+        const parcel = parcels[feature.properties.HANDLE];
+        if (parcel.assessmentTotal > 0) {
+          layer.bindTooltip(
+            `
+          <h4>${parcel.address}</h4>
+          <p>Assessed Land Value: $${formatNumber(parcel.assessmentLand)}</p>
+          <p>Assessed Improvement Value: $${formatNumber(
+            parcel.assessmentImprovement
+          )}</p>
+          <p>Assessed Total Value: $${formatNumber(parcel.assessmentTotal)}</p>
+          <p>Land Area: ${formatNumber(parcel.landArea)} sqft</p>
+          <p>Total Value Density: $${formatNumber(
+            roundToTwoDecimals(parcel.tvd * 43560)
+          )}/acre</p>
+          <p>Improvement Value to Land Value Ratio: ${parcel.lir}</p>
+          `,
+            { sticky: true }
+          );
+          layer.on("click", () => {
+            window
+              .open(
+                `https://www.google.com/maps/place/${parcel.address.replace(
+                  " ",
+                  "+"
+                )}+St.+Louis,+MO`,
+                "_blank"
+              )
+              .focus();
+          });
+        }
+      },
+    }
+  );
+
+  parcelLayer.addTo(map);
+}
+
 const parcels = {};
 let landAreasZero = 0;
 
@@ -146,12 +346,12 @@ d3.csv(PARCEL_DATA_FILE)
     const parcelValues = Object.values(parcels);
 
     const ivds = parcelValues.map((p) => p.ivd);
-    const minIvd = Math.min(...ivds);
-    const maxIvd = Math.max(...ivds);
+    minIvd = Math.min(...ivds);
+    maxIvd = Math.max(...ivds);
 
     const logIvds = parcelValues.map((p) => p.logIvd);
-    const minLogIvd = Math.min(...logIvds.filter((l) => !Number.isNaN(l)));
-    const maxLogIvd = Math.max(...logIvds.filter((l) => !Number.isNaN(l)));
+    minLogIvd = Math.min(...logIvds.filter((l) => !Number.isNaN(l)));
+    maxLogIvd = Math.max(...logIvds.filter((l) => !Number.isNaN(l)));
     Object.keys(parcels).map((k) => {
       if (
         parcels[k].logIvd === null ||
@@ -163,12 +363,12 @@ d3.csv(PARCEL_DATA_FILE)
     });
 
     const lvds = parcelValues.map((p) => p.lvd);
-    const minLvd = Math.min(...lvds);
-    const maxLvd = Math.max(...lvds);
+    minLvd = Math.min(...lvds);
+    maxLvd = Math.max(...lvds);
 
     const logLvds = parcelValues.map((p) => p.logLvd);
-    const minLogLvd = Math.min(...logLvds.filter((l) => !Number.isNaN(l)));
-    const maxLogLvd = Math.max(...logLvds.filter((l) => !Number.isNaN(l)));
+    minLogLvd = Math.min(...logLvds.filter((l) => !Number.isNaN(l)));
+    maxLogLvd = Math.max(...logLvds.filter((l) => !Number.isNaN(l)));
     Object.keys(parcels).map((k) => {
       if (
         parcels[k].logLvd === null ||
@@ -180,12 +380,12 @@ d3.csv(PARCEL_DATA_FILE)
     });
 
     const tvds = parcelValues.map((p) => p.tvd);
-    const minTvd = Math.min(...tvds);
-    const maxTvd = Math.max(...tvds);
+    minTvd = Math.min(...tvds);
+    maxTvd = Math.max(...tvds);
 
     const logTvds = parcelValues.map((p) => p.logTvd);
-    const minLogTvd = Math.min(...logTvds.filter((l) => !Number.isNaN(l)));
-    const maxLogTvd = Math.max(...logTvds.filter((l) => !Number.isNaN(l)));
+    minLogTvd = Math.min(...logTvds.filter((l) => !Number.isNaN(l)));
+    maxLogTvd = Math.max(...logTvds.filter((l) => !Number.isNaN(l)));
     Object.keys(parcels).map((k) => {
       if (
         parcels[k].logTvd === null ||
@@ -199,14 +399,14 @@ d3.csv(PARCEL_DATA_FILE)
     const lirs = parcelValues
       .map((p) => p.lir)
       .filter((p) => p !== null && !Number.isNaN(p));
-    const minLir = Math.min(...lirs);
-    const maxLir = Math.max(...lirs);
+    minLir = Math.min(...lirs);
+    maxLir = Math.max(...lirs);
 
     const logLirs = parcelValues
       .map((p) => p.logLir)
       .filter((p) => p !== null && !Number.isNaN(p));
-    const minLogLir = Math.min(...logLirs);
-    const maxLogLir = Math.max(...logLirs);
+    minLogLir = Math.min(...logLirs);
+    maxLogLir = Math.max(...logLirs);
     Object.keys(parcels).map((k) => {
       if (
         parcels[k].logLir === null ||
@@ -217,167 +417,12 @@ d3.csv(PARCEL_DATA_FILE)
       }
     });
 
-    const parcelLayer = L.geoJSON(
-      parcelValues.map((p) => p.shape),
-      {
-        weight: 2,
-        style: (feature) => {
-          const parcel = parcels[feature.properties.HANDLE];
+    document.querySelectorAll('input[name="metric"]').forEach((radio) => {
+      radio.addEventListener("change", (event) => {
+        selectedMetric = event.target.value;
+        updateMap(parcels);
+      });
+    });
 
-          // LOG LAND IMPROVEMENT RATIO
-          // const colorIndex = Math.floor(
-          //   (((parcel.logLir ?? minLogLir) - minLogLir) /
-          //     (maxLogLir - minLogLir)) *
-          //     colorScale.length
-          // );
-          // if (parcel.assessmentLand > 0 && parcel.assessmentImprovement > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // LAND IMPROVEMENT RATIO
-          // const colorIndex = Math.floor(
-          //   ((parcel.lir - minLir) / (maxLir - minLir)) * colorScale.length
-          // );
-          // if (parcel.assessmentLand > 0 && parcel.assessmentImprovement > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // LOG IMPROVEMENT VALUE DENSITY
-          // const colorIndex = Math.floor(
-          //   (((parcel.logIvd ?? minLogIvd) - minLogIvd) /
-          //     (maxLogIvd - minLogIvd)) *
-          //     colorScale.length
-          // );
-          // if (parcel.assessmentImprovement > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // IMPROVEMENT VALUE DENSITY
-          // const colorIndex = Math.floor(
-          //   ((parcel.ivd - minIvd) / (maxIvd - minIvd)) * colorScale.length
-          // );
-          // if (parcel.assessmentImprovement > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // LOG LAND VALUE DENSITY
-          // const colorIndex = Math.floor(
-          //   (((parcel.logLvd ?? minLogLvd) - minLogLvd) /
-          //     (maxLogLvd - minLogLvd)) *
-          //     colorScale.length
-          // );
-          // if (parcel.assessmentLand > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // LAND VALUE DENSITY
-          // const colorIndex = Math.floor(
-          //   ((parcel.lvd - minLvd) / (maxLvd - minLvd)) * colorScale.length
-          // );
-          // if (parcel.assessmentLand > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-
-          // LOG TOTAL VALUE DENSITY
-          const colorIndex = Math.floor(
-            (((parcel.logTvd ?? minLogTvd) - minLogTvd) /
-              (maxLogTvd - minLogTvd)) *
-              colorScale.length
-          );
-          if (parcel.assessmentTotal > 0) {
-            return {
-              fillColor: colorScale[colorIndex],
-              fillOpacity: 0.5,
-              color: colorScale[colorIndex],
-              opacity: 1,
-            };
-          }
-          return { opacity: 0, fillOpacity: 0 };
-
-          // TOTAL VALUE DENSITY
-          // const colorIndex = Math.floor(
-          //   ((parcel.tvd - minTvd) / (maxTvd - minTvd)) * colorScale.length
-          // );
-          // if (parcel.assessmentTotal > 0) {
-          //   return {
-          //     fillColor: colorScale[colorIndex],
-          //     fillOpacity: 0.5,
-          //     color: colorScale[colorIndex],
-          //     opacity: 1,
-          //   };
-          // }
-          // return { opacity: 0, fillOpacity: 0 };
-        },
-        onEachFeature: (feature, layer) => {
-          const parcel = parcels[feature.properties.HANDLE];
-          if (parcel.assessmentTotal > 0) {
-            layer.bindTooltip(
-              `
-            <h4>${parcel.address}</h4>
-            <p>Assessed Land Value: $${formatNumber(parcel.assessmentLand)}</p>
-            <p>Assessed Improvement Value: $${formatNumber(
-              parcel.assessmentImprovement
-            )}</p>
-            <p>Assessed Total Value: $${formatNumber(
-              parcel.assessmentTotal
-            )}</p>
-            <p>Land Area: ${formatNumber(parcel.landArea)} sqft</p>
-            <p>Total Value Density: $${formatNumber(
-              roundToTwoDecimals(parcel.tvd * 43560)
-            )}/acre</p>
-            <p>Improvement Value to Land Value Ratio: ${parcel.lir}</p>
-            `,
-              { sticky: true }
-            );
-            layer.on("click", () => {
-              window
-                .open(
-                  `https://www.google.com/maps/place/${parcel.address.replace(
-                    " ",
-                    "+"
-                  )}+St.+Louis,+MO`,
-                  "_blank"
-                )
-                .focus();
-            });
-          }
-        },
-      }
-    ).addTo(map);
+    updateMap(parcels);
   });
