@@ -1,0 +1,12 @@
+[build]
+publish = "src"
+
+[[redirects]]
+from = "/data/*"
+to = "/data/:splat"
+status = 200
+
+[[redirects]]
+from = "/assets/*"
+to = "/assets/:splat"
+status = 200

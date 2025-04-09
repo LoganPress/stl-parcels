@@ -10,6 +10,86 @@
       integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
       crossorigin=""
     />
+  </head>
+  <body style="background-color: #f7f7f2">
+    <div
+      style="
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-top: 20px;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      "
+    >
+      <h1>STL Parcel Value and Value Density Map</h1>
+      <p>
+        This is a map of land parcel values and values per acre for available
+        parcels in the City of St. Louis. Please use responsibly.
+      </p>
+      <!-- <div id="controls">
+        <label
+          ><input type="radio" name="metric" value="logTvd" checked />Log Total
+          Value Density</label
+        >
+        <label
+          ><input type="radio" name="metric" value="tvd" />Total Value
+          Density</label
+        >
+        <label
+          ><input type="radio" name="metric" value="logLir" />Log Land
+          Improvement Ratio</label
+        >
+        <label
+          ><input type="radio" name="metric" value="lir" />Land Improvement
+          Ratio</label
+        >
+      </div> -->
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+        "
+      >
+        <div id="map" style="height: 850px; width: 1200px"></div>
+        <div id="legend-container"></div>
+      </div>
+      <p>
+        Data courtesy of the
+        <a
+          href="https://www.stlouis-mo.gov/data/datasets/dataset.cfm?id=82"
+          target="_blank"
+          >City of St. Louis</a
+        >, 2022
+      </p>
+      <a href="https://github.com/LoganPress/stl-parcels" target="_blank"
+        >View on GitHub</a
+      >
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+          gap: 1;
+          margin-top: 20px;
+        "
+      >
+        <p>Made with:</p>
+        <a href="https://www.maptiler.com/" target="_blank"
+          ><img
+            width="200px"
+            height="52px"
+            src="/assets/maptiler-logo-dark.png"
+        /></a>
+      </div>
+    </div>
+
     <script
       src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
       integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
@@ -17,12 +97,7 @@
     ></script>
     <script src="https://d3js.org/d3.v6.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/geojson/0.5.0/geojson.min.js"></script>
-  </head>
-  <body>
-    <h1>STL Parcel Map</h1>
-    <p>Data courtesy of the City of St. Louis, 2022</p>
-    <div id="map" style="height: 850px; width: 1200px"></div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js"></script>
     <script src="main.js"></script>
   </body>
 </html>

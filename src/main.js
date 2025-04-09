@@ -1,9 +1,9 @@
 const PARCEL_DATA_FILE = "/data/prcl_data/PAR_SAMPLE.csv";
 const PARCEL_SHAPE_FILE = "/data/prcl_geojson/prcl_sample.json";
-// const PARCEL_DATA_FILE = "/data/prcl_data/PAR_2022.csv";
-// const PARCEL_SHAPE_FILE = "/data/prcl_geojson/prcl.json";
 const defaultX = 38.6468;
 const defaultY = -90.2528;
+
+const MAPTILER_API_KEY = "pdFHr4meye2YHVGXw5sv";
 
 function roundToTwoDecimals(n) {
   return Math.round((n + Number.EPSILON) * 100) / 100;
@@ -33,25 +33,42 @@ const colorScale = [
   "#ffff00",
 ];
 
-// L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-//   minZoom: 11,
-//   maxZoom: 20,
-//   attribution:
-//     'Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-// }).addTo(map);
-
 L.tileLayer(
-  "https://api.maptiler.com/maps/backdrop/{z}/{x}/{y}.png?key=pdFHr4meye2YHVGXw5sv",
+  `https://api.maptiler.com/maps/backdrop/{z}/{x}/{y}.png?key=${MAPTILER_API_KEY}`,
   {
     minZoom: 11,
     maxZoom: 18,
     attribution:
-      'Map data &copy; <a href="https://www.maptiler.com/copyright">MapTiler</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> | &copy; Logan Press 2024',
+      'Map data &copy; <a href="https://www.maptiler.com/copyright">MapTiler</a> &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap contributors</a> | &copy; Logan Press 2025',
     crossOrigin: true,
   }
 ).addTo(map);
 
 map.setMaxBounds(map.getBounds());
+
+const legendScale = d3
+  .scaleOrdinal()
+  .domain(Array.from({ length: colorScale.length }).map((_, i) => i))
+  .range([...colorScale].reverse());
+
+const legendSvg = d3
+  .select("#legend-container")
+  .append("svg")
+  .attr("height", 460)
+  .attr("width", 100);
+
+const legend = d3
+  .legendColor()
+  .shapeHeight(40)
+  .labels(({ i }) =>
+    i === 0 ? "High" : i === colorScale.length - 1 ? "Low" : ""
+  )
+  .labelFormat(d3.format("c"))
+  .cells(colorScale.length)
+  .orient("vertical")
+  .scale(legendScale);
+
+legendSvg.append("g").call(legend);
 
 const parcels = {};
 let landAreasZero = 0;
@@ -80,16 +97,15 @@ d3.csv(PARCEL_DATA_FILE)
           logLir: NaN,
           shape: {},
         };
-      }
-      if (landArea === 0) {
+      } else {
         landAreasZero++;
       }
     });
-    console.log(`Parcels with land area = 0: ${landAreasZero}`);
-    console.log(`Loaded in ${Object.keys(parcels).length} parcels`);
+    console.log(`Parcels with 0 land area: ${landAreasZero}`);
+    console.log(`Loaded in ${Object.keys(parcels).length} other parcels`);
     await fetch(PARCEL_SHAPE_FILE).then(async (resp) => {
       await resp.json().then((shapes) => {
-        shapes.features.map((feature) => {
+        shapes.features.forEach((feature) => {
           const parcel = parcels[feature.properties.HANDLE];
           if (parcel) {
             parcel.shape = feature;
@@ -331,8 +347,8 @@ d3.csv(PARCEL_DATA_FILE)
         onEachFeature: (feature, layer) => {
           const parcel = parcels[feature.properties.HANDLE];
           if (parcel.assessmentTotal > 0) {
-          layer.bindTooltip(
-            `
+            layer.bindTooltip(
+              `
             <h4>${parcel.address}</h4>
             <p>Assessed Land Value: $${formatNumber(parcel.assessmentLand)}</p>
             <p>Assessed Improvement Value: $${formatNumber(
@@ -347,19 +363,19 @@ d3.csv(PARCEL_DATA_FILE)
             )}/acre</p>
             <p>Improvement Value to Land Value Ratio: ${parcel.lir}</p>
             `,
-            { sticky: true }
-          );
-          layer.on("click", () => {
-            window
-              .open(
-                `https://www.google.com/maps/place/${parcel.address.replace(
-                  " ",
-                  "+"
-                )}+St.+Louis,+MO`,
-                "_blank"
-              )
-              .focus();
-          });
+              { sticky: true }
+            );
+            layer.on("click", () => {
+              window
+                .open(
+                  `https://www.google.com/maps/place/${parcel.address.replace(
+                    " ",
+                    "+"
+                  )}+St.+Louis,+MO`,
+                  "_blank"
+                )
+                .focus();
+            });
           }
         },
       }
