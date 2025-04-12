@@ -4,7 +4,7 @@ const prcl = require(__dirname + "/data/prcl_geojson/prcl.json");
 (async () => {
   const d3 = await import("/path/to/d3-dsv");
   const csv = fs.readFileSync(
-    __dirname + "/data/prcl_data/PAR2022.csv",
+    __dirname + "/data/prcl_data/PAR_2023.csv",
     "utf8"
   );
 
